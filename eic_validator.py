@@ -115,12 +115,19 @@ def examine_eic(eic_code):
 
     if len(eic_code) < 16:
         result['errors'].append({'error_message': 'TOO_SHORT'})
+        result['is_valid'] = False  # set is_valid to False if code too short
+
     if len(eic_code) > 16:
         result['errors'].append({'error_message': 'TOO_LONG'})
+        result['is_valid'] = False  # set is_valid to False if code too long
+
     if not eic_code.isupper():
         result['errors'].append({'error_message': 'LETTERS_LOWERCASE'})
+        result['is_valid'] = False  # set is_valid to False if lowercase detcted
+
     if not EICqm(eic_code):  # call EICqm for validation
         result['errors'].append({'error_message': 'INVALID_FORMAT'})
+        result['is_valid'] = False  # set is_valid to False if format is wrong
         return result  # malformed, so return
 
     eic_code = eic_code.lower()  # transform input-string to lower
@@ -134,15 +141,17 @@ def examine_eic(eic_code):
 
     if eic_code[2] not in types:
         result['warnings'].append({'error_message': 'UNKNOWN_TYPE', 'error_params': [eic_code[2]]})
+        result['is_valid'] = False  # set is_valid to False if type is unknown
 
     if eic_code[:2] not in issuers:
         result['warnings'].append({'error_message': 'UNKNOWN_ISSUER', 'error_params': [eic_code[:2]]})
+        result['is_valid'] = False  # set is_valid to False if issuer is unknown
 
     result['issuer'] = get_issuer(eic_code)
     result['type'] = get_type(eic_code)
-    result['is_valid'] = not result['errors']
 
     return result
+
 
 def get_type(eic_code):
     if not EICqm(eic_code):
@@ -155,15 +164,15 @@ def get_issuer(eic_code):
     return issuers[eic_code[:2]]
 
 def main():
-    eic_code = input("Bitte geben Sie den zu prüfenden EIC-Code ein: ")
+    eic_code = input("Enter EIC-code to check: ")
     result = examine_eic(eic_code)
     if result['is_valid']:
-        print("Der EIC-Code ist gültig!")
-        print("Kartenherausgeber:", result['issuer'])
-        print("Typ:", result['type'])
+        print("EIC-code is valid!")
+        print("Issuer:", result['issuer'])
+        print("Type:", result['type'])
     else:
-        print("Der EIC-Code ist ungültig.")
-        print("Fehler:", result['errors'])
+        print("EIC-code is not valid!")
+        print("Error:", result['errors'])
 
 if __name__ == "__main__":
     main()
