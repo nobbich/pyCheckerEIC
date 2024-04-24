@@ -131,13 +131,12 @@ def examine_eic(eic_code):
         return result  # malformed, so return
 
     eic_code = eic_code.lower()  # transform input-string to lower
-
+    if eic_code[15] == '-':
+    result['errors'].append({'error_message': 'CHECKCHAR_HYPHEN'})
+    
     cc = check_char(eic_code)
     if eic_code[15] != cc:
         result['errors'].append({'error_message': 'CHECKCHAR_MISMATCH', 'error_params': [cc, eic_code[15]]})
-
-    if eic_code[15] == cc and cc == '-':
-        result['errors'].append({'error_message': 'CHECKCHAR_HYPHEN'})
 
     if eic_code[2] not in types:
         result['warnings'].append({'error_message': 'UNKNOWN_TYPE', 'error_params': [eic_code[2]]})
@@ -151,7 +150,6 @@ def examine_eic(eic_code):
     result['type'] = get_type(eic_code)
 
     return result
-
 
 def get_type(eic_code):
     if not EICqm(eic_code):
